@@ -17,6 +17,49 @@
 <script>
 const endpoint = 'https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json';
 
+const cities = []
+
+//TODO: display cities in order of proximity to current location
+
+fetch(endpoint)
+  .then(blob => blob.json())
+  .then(data => cities.push(...data))
+
+function findMatch(term, cities) {
+  //cannot use regex as city.match(/term/i) - it will search exactly for word between slashes
+  // need to use regex variable
+    // and pass any flags we want(i.e. 'g' - global) as second parameter
+      // i = case insensitive 
+  const reg = new RegExp(term, 'gi')
+
+  return cities.filter(location => {
+    return location.city.match(reg) || location.state.match(reg)
+  })
+}
+
+function displayMatches() {
+  const matchArray = findMatch(this.value, cities)
+  const html = matchArray.map(place => {
+
+    // highlight section of city or state that matches user input
+    const reg = new RegExp(this.value, 'gi')
+    const cityName = place.city.replace(reg, `<span class="hl">${this.value}</span>`)
+    const stateName = place.state.replace(reg, `<span class="hl"${this.value}</span>`)
+    return `
+      <li>
+        <span class="name">${cityName}, ${stateName}</span>
+        <span class="population">${place.population}</span>
+      </li>
+    `
+  }).join("")
+  suggestions.innerHTML = html
+}
+
+const searchInput = document.querySelector('.search')
+const suggestions = document.querySelector('.suggestions')
+
+searchInput.addEventListener('keyup', displayMatches)
+
 </script>
   </body>
 </html>
